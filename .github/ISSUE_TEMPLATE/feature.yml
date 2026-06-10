@@ -1,0 +1,50 @@
+name: Feature / Task
+description: Standard ReviewStream work item
+title: '<short imperative title — becomes the branch name>'
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > **Before submitting:**
+        > - Apply the appropriate **labels** (project-defined; not auto-applied by this form).
+        > - If another issue must close before this one can start, set the structured **Blocked by** relation in the Development sidebar after creating this issue. Do not list prerequisites in the body — the structured relation is the source of truth.
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: One sentence — what does "done" look like at the user/system level?
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description:
+        Checkbox list of concrete, testable deliverables. Verification commands (e.g.
+        `npm test --workspaces --if-present`) belong directly in the list.
+      value: |
+        - [ ]
+    validations:
+      required: true
+  - type: textarea
+    id: non_goals
+    attributes:
+      label: Non-goals
+      description:
+        Optional. Use only when there's real drift risk — explicitly fence off later work the agent
+        might be tempted to drift into. Skip if the AC already constrains scope.
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description:
+        Optional. Links to ADRs (`docs/decisions/NNNN-…md`) or rules the implementer must read. Skip
+        if the change has no architectural pre-reads.
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description:
+        "Optional. Context that doesn't fit Goal / AC: linked downstream issues, gotchas, anything
+        else worth knowing."

@@ -2,8 +2,8 @@
 
 For this assignment, you’ll be creating:
 
-* A backend service/app that polls an iOS app’s App Store Connect RSS feed to fetch and store App Store reviews for a specific iOS app  
-* A React app that calls an endpoint on the backend app to fetch and display new reviews from the last 48 hours
+- A backend service/app that polls an iOS app’s App Store Connect RSS feed to fetch and store App Store reviews for a specific iOS app  
+- A React app that calls an endpoint on the backend app to fetch and display new reviews from the last 48 hours
 
 Your service should store data about the reviews it fetches for an app (something as simple as writing to an external file is perfectly fine). The app should be able to be stopped/restarted without losing its progress and state.
 
@@ -15,11 +15,11 @@ Think about how to support any number of apps, and how this would affect your de
 
 Some extra notes:
 
-- The assignment should take 2 \- 3 hours to complete  
-- Given our Golang backend it’s great if you want to work in Go. However if you are not familiar with go, we’d ask you use either Python or Javascript/Typescript instead (and frameworks in those languages). Please avoid a Lisp language, Ruby/Rails, Rust, Elixir, etc. If you are in doubt feel free to ask us\!  
+- The assignment should take 2  3 hours to complete  
+- Given our Golang backend it’s great if you want to work in Go. However if you are not familiar with go, we’d ask you use either Python or Javascript/Typescript instead (and frameworks in those languages). Please avoid a Lisp language, Ruby/Rails, Rust, Elixir, etc. If you are in doubt feel free to ask us  
 - Example RSS URL: [https://itunes.apple.com/us/rss/customerreviews/id=595068606/sortBy=mostRecent/page=1/json](https://itunes.apple.com/us/rss/customerreviews/id=595068606/sortBy=mostRecent/page=1/json)  
 - Feel free to change the appId in that RSS url to any app of your choosing. You can find the appId for any iOS app on the App Store by going to their App Store Preview and grabbing the “id” in the url: [https://apps.apple.com/us/app/snapchat/id447188370](https://apps.apple.com/us/app/snapchat/id447188370)  
-- If you’re having issues getting recent reviews for apps from the RSS feed, feel free to increase the 48 hour time window 
+- If you’re having issues getting recent reviews for apps from the RSS feed, feel free to increase the 48 hour time window
 
 **What we’re assessing for**
 
@@ -30,8 +30,7 @@ Some extra notes:
 - [ ] React app displays new reviews from the last 48 hours  
 - [ ] React app reviews display required review data (review content, author, score, time submitted)
 
-2. **Is the app well architected?**
+1. **Is the app well architected?**
+2. **Is the code well organized, well documented, and easy to follow?**
+3. **Bonus: Is the app well tested?**
 
-3. **Is the code well organized, well documented, and easy to follow?**  
-     
-4. **Bonus: Is the app well tested?**

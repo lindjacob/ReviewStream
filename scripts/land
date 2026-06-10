@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+error() {
+  printf 'land: %s\n' "$*" >&2
+}
+
+current_branch() {
+  local branch
+  branch="$(git branch --show-current)"
+  if [[ -z "$branch" ]]; then
+    error "cannot land from a detached HEAD"
+    exit 1
+  fi
+  printf '%s' "$branch"
+}
+
+main() {
+  local branch
+  branch="$(current_branch)"
+
+  if [[ "$branch" == "main" ]]; then
+    error "refusing to land main"
+    exit 1
+  fi
+
+  if [[ ! -t 0 ]]; then
+    error "refusing to run without an interactive TTY"
+    exit 1
+  fi
+
+  local answer
+  printf 'Land current PR with admin merge and delete the remote branch? [y/N] '
+  read -r answer
+
+  if [[ "$answer" != "y" && "$answer" != "Y" ]]; then
+    error "aborted"
+    exit 1
+  fi
+
+  # gh deletes both the remote branch and the checked-out local branch.
+  branch="$(current_branch)"
+  gh pr merge --admin --merge
+  git switch main
+  git pull --ff-only origin main
+  git branch -d "$branch" 2>/dev/null || true
+}
+
+main "$@"

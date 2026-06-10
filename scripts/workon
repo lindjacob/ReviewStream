@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+error() {
+  printf 'workon: %s\n' "$*" >&2
+}
+
+usage() {
+  cat >&2 <<'EOF'
+Usage:
+  workon <issue-number>
+  workon -t "scratch issue title"
+
+Options:
+  -t, --title  Create a label-less quick issue before creating the branch.
+EOF
+}
+
+require_clean_worktree() {
+  if [[ -n "$(git status --porcelain)" ]]; then
+    error "working tree has uncommitted changes; commit, stash, or discard them first"
+    exit 1
+  fi
+}
+
+slugify() {
+  printf '%s' "$1" |
+    LC_ALL=C tr '[:upper:]' '[:lower:]' |
+    sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//; s/-+/-/g'
+}
+
+create_quick_issue() {
+  local title=$1
+
+  cat >&2 <<'EOF'
+workon: WARNING: quick issue creation skips the structured issue template.
+workon: WARNING: the new issue will be label-less and is acceptable only for non-development scratch issues.
+EOF
+
+  local issue_url
+  issue_url="$(gh issue create --title "$title" --body "")"
+  printf '%s' "${issue_url##*/}"
+}
+
+main() {
+  require_clean_worktree
+
+  local issue_number
+  local issue_title
+
+  case "$#" in
+    1)
+      if [[ ! "$1" =~ ^[0-9]+$ ]]; then
+        usage
+        exit 1
+      fi
+      issue_number=$1
+      issue_title="$(gh issue view "$issue_number" --json title --jq '.title')"
+      ;;
+    2)
+      if [[ "$1" != "-t" && "$1" != "--title" ]]; then
+        usage
+        exit 1
+      fi
+      issue_title=$2
+      if [[ -z "$issue_title" ]]; then
+        error "quick issue title cannot be empty"
+        exit 1
+      fi
+      issue_number="$(create_quick_issue "$issue_title")"
+      ;;
+    *)
+      usage
+      exit 1
+      ;;
+  esac
+
+  local slug
+  slug="$(slugify "$issue_title")"
+  if [[ -z "$slug" ]]; then
+    error "issue title did not produce a usable branch slug"
+    exit 1
+  fi
+
+  local branch_name="${issue_number}-${slug}"
+
+  if git show-ref --verify --quiet "refs/heads/${branch_name}"; then
+    git switch "$branch_name"
+    exit 0
+  fi
+
+  git fetch origin --prune
+  if git show-ref --verify --quiet "refs/remotes/origin/${branch_name}"; then
+    git switch --track "origin/${branch_name}"
+    exit 0
+  fi
+
+  gh issue develop "$issue_number" --name "$branch_name" --checkout
+}
+
+main "$@"

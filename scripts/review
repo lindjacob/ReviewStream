@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# review — provider verb (GitHub). Print a PR's diff and its CI/status checks.
+# Usage: review <pr-number-or-branch>
+
+if [[ "$#" -lt 1 ]]; then
+  printf 'review: usage: review <pr-number-or-branch>\n' >&2
+  exit 1
+fi
+
+target=$1
+
+printf '===== Checks =====\n'
+gh pr checks "$target" || true
+printf '\n===== Diff =====\n'
+gh pr diff "$target"

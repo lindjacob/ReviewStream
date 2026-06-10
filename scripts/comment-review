@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# comment-review — provider verb (GitHub). Post a review comment on a PR.
+# Usage: comment-review <pr-number-or-branch> --body-file <path>
+
+exec gh pr comment "$@"

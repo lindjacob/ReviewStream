@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+error() {
+  printf 'done: %s\n' "$*" >&2
+}
+
+current_branch() {
+  local branch
+  branch="$(git branch --show-current)"
+  if [[ -z "$branch" ]]; then
+    error "cannot open a PR from a detached HEAD"
+    exit 1
+  fi
+  printf '%s' "$branch"
+}
+
+main() {
+  local branch
+  branch="$(current_branch)"
+
+  if [[ "$branch" == "main" ]]; then
+    error "refusing to open a PR from main"
+    exit 1
+  fi
+
+  local issue_number
+  if [[ "$branch" =~ ^([0-9]+)- ]]; then
+    issue_number="${BASH_REMATCH[1]}"
+  else
+    error "current branch must start with an issue id followed by a hyphen"
+    exit 1
+  fi
+
+  local default_title
+  default_title="$(git log -1 --pretty=%s)"
+
+  local has_title=0
+  local has_body=0
+  local args=()
+
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      --title | --body | --body-file)
+        if [[ "$#" -lt 2 ]]; then
+          error "$1 requires a value"
+          exit 1
+        fi
+        [[ "$1" == "--title" ]] && has_title=1
+        [[ "$1" == "--body" || "$1" == "--body-file" ]] && has_body=1
+        args+=("$1" "$2")
+        shift 2
+        ;;
+      --title=*)
+        has_title=1
+        args+=("$1")
+        shift
+        ;;
+      --body=* | --body-file=*)
+        has_body=1
+        args+=("$1")
+        shift
+        ;;
+      *)
+        args+=("$1")
+        shift
+        ;;
+    esac
+  done
+
+  local create_args=()
+  if [[ "$has_title" -eq 0 ]]; then
+    create_args+=(--title "$default_title")
+  fi
+  if [[ "$has_body" -eq 0 ]]; then
+    create_args+=(--body "Closes #${issue_number}")
+  fi
+  create_args+=("${args[@]}")
+
+  git push -u origin "$branch"
+
+  local existing_pr_url
+  if existing_pr_url="$(gh pr view "$branch" --json url --jq '.url' 2>/dev/null)"; then
+    printf 'PR already exists: %s\nReview/merge happens separately.\n' "$existing_pr_url"
+    exit 0
+  fi
+
+  local pr_url
+  pr_url="$(gh pr create "${create_args[@]}")"
+  printf 'PR opened: %s\nReview/merge happens separately.\n' "$pr_url"
+}
+
+main "$@"
