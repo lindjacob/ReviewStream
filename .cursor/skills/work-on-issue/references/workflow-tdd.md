@@ -17,8 +17,8 @@ every line) and prevents the worker from silently shipping unverified code.
 4. **Commit the tests as the first commit on the branch**, ahead of the implementation. The
    orchestrator does this directly (not via the worker) so the tests are durable, inspectable in the
    PR, and visible to reviewers as the executable spec.
-5. **Delegate implementation.** Launch an implementation subagent using the most capable
-   implementation model your agent tool offers. Build its prompt by including the full contents of
+5. **Delegate implementation.** Launch an implementation subagent using newest cursor composer
+   model - use the newest claude sonnet when composer is unavailable. Build its prompt by including the full contents of
    [`../assets/worker-prompt.md`](../assets/worker-prompt.md) verbatim, then appending the issue
    body/comments, the approved plan, relevant rules/ADRs, and the acceptance criteria. Explicitly add
    a green test run as a worker success criterion alongside the acceptance criteria.
