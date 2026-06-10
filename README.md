@@ -40,6 +40,8 @@ The backend listens on `http://localhost:3000` and polls immediately on startup.
 - `APP_ID`: App Store app ID to poll. Defaults to `595068606`.
 - `POLL_INTERVAL`: polling interval in milliseconds. Defaults to `300000`.
 
+Reviews are persisted to `data/reviews.sqlite` at the repository root.
+
 The backend exposes a health check and JSON API for the configured app and its recent reviews:
 
 ```sh

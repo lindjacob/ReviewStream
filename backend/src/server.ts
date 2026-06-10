@@ -1,11 +1,17 @@
 import express, { type Express, type Response } from "express";
+import type {
+  AppsResponse,
+  JsonErrorCode,
+  JsonErrorResponse,
+  ReviewDto,
+  ReviewsResponse,
+} from "@reviewstream/shared/api";
 
+import type { Review } from "./itunesReviews.js";
 import type { ReviewStore } from "./reviewStore.js";
 
 const DEFAULT_REVIEW_WINDOW_HOURS = 48;
 const MS_PER_HOUR = 60 * 60 * 1000;
-
-type JsonErrorCode = "invalid_hours" | "unknown_app" | "reviews_unavailable";
 
 export type CreateServerOptions = {
   appIds: readonly string[];
@@ -29,12 +35,21 @@ function sendJsonError(
   code: JsonErrorCode,
   message: string,
 ): void {
-  res.status(status).json({
+  const body: JsonErrorResponse = {
     error: {
       code,
       message,
     },
-  });
+  };
+
+  res.status(status).json(body);
+}
+
+function toReviewDto(review: Review): ReviewDto {
+  return {
+    ...review,
+    submittedAt: review.submittedAt.toISOString(),
+  };
 }
 
 function parseHours(value: unknown): HoursParseResult {
@@ -67,7 +82,8 @@ export function createServer(options: CreateServerOptions): Express {
   });
 
   app.get("/api/apps", (_req, res) => {
-    res.json({ apps: appIds });
+    const body: AppsResponse = { apps: appIds };
+    res.json(body);
   });
 
   app.get("/api/apps/:appId/reviews", async (req, res) => {
@@ -87,8 +103,9 @@ export function createServer(options: CreateServerOptions): Express {
     try {
       const sinceMs = nowMs() - parsedHours.hours * MS_PER_HOUR;
       const reviews = await Promise.resolve(store.getRecent(appId, sinceMs));
+      const body: ReviewsResponse = { reviews: reviews.map(toReviewDto) };
 
-      res.json({ reviews });
+      res.json(body);
     } catch (error) {
       log("Review lookup failed:", error);
       sendJsonError(res, 500, "reviews_unavailable", "Unable to load reviews");

@@ -1,6 +1,7 @@
 import { mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
+import { fileURLToPath } from "node:url";
 
 import type { Review } from "./itunesReviews.js";
 
@@ -27,7 +28,8 @@ type ReviewRow = {
   submitted_at: number;
 };
 
-const DEFAULT_DB_PATH = join("data", "reviews.sqlite");
+const backendDir = dirname(dirname(fileURLToPath(import.meta.url)));
+const DEFAULT_DB_PATH = join(backendDir, "..", "data", "reviews.sqlite");
 
 function initializeSchema(db: DatabaseSync): void {
   db.exec(`
