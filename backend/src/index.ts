@@ -1,23 +1,19 @@
-import express from "express";
-
 import { fetchItunesReviews } from "./itunesReviews.js";
 import { parseAppId, parsePollIntervalMs, startReviewPolling } from "./polling.js";
 import { createSqliteReviewStore } from "./reviewStore.js";
+import { createServer } from "./server.js";
 
-const app = express();
 const port = 3000;
+const appId = parseAppId();
 
 const store = createSqliteReviewStore();
 const polling = startReviewPolling({
-  appId: parseAppId(),
+  appId,
   pollIntervalMs: parsePollIntervalMs(),
   store,
   fetchReviews: fetchItunesReviews,
 });
-
-app.get("/health", (_req, res) => {
-  res.json({ status: "ok" });
-});
+const app = createServer({ appIds: [appId], store });
 
 const server = app.listen(port, () => {
   console.log(`Backend listening on http://localhost:${port}`);

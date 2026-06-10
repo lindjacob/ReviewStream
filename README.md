@@ -40,11 +40,26 @@ The backend listens on `http://localhost:3000` and polls immediately on startup.
 - `APP_ID`: App Store app ID to poll. Defaults to `595068606`.
 - `POLL_INTERVAL`: polling interval in milliseconds. Defaults to `300000`.
 
-The current scaffold exposes:
+The backend exposes a health check and JSON API for the configured app and its recent reviews:
 
 ```sh
 curl http://localhost:3000/health
+curl http://localhost:3000/api/apps
+curl "http://localhost:3000/api/apps/595068606/reviews?hours=48"
 ```
+
+`GET /api/apps` returns the configured app IDs:
+
+```json
+{ "apps": ["595068606"] }
+```
+
+`GET /api/apps/:appId/reviews?hours=48` returns reviews newest first within the requested time
+window. `hours` defaults to `48` when omitted and must be a finite positive number. Unknown
+`appId` values and invalid `hours` values return JSON error responses.
+
+Each review includes `id`, `appId`, `author`, `title`, `content`, `rating`, and ISO `submittedAt`
+fields.
 
 Start the frontend in a second terminal:
 
