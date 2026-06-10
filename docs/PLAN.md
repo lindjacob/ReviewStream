@@ -2,7 +2,7 @@
 
 ## Language decision
 
-Go is explicitly ruled out by the assignment for non-Go-familiar candidates. We use **TypeScript end-to-end**: Node + Express on the backend, Vite + React on the frontend. Justification of each dependency goes in the README (Express: routing ergonomics, universally readable; Vitest: bonus testing criterion; everything else is Node stdlib — `fetch` and `node:sqlite` included).
+Go is explicitly ruled out by the assignment for non-Go-familiar candidates. We use **TypeScript end-to-end**: Node + Express on the backend, Vite + React on the frontend. Justification of each dependency goes in the README (Express: routing ergonomics, universally readable; everything else is Node stdlib — `fetch`, `node:test`, and `node:sqlite` included).
 
 ## Storage decision
 
@@ -30,8 +30,8 @@ flowchart LR
 
 ## Repo layout
 
-- `backend/src/rss.ts` — fetch + parse the iTunes JSON feed into a `Review` model (`id, appId, author, title, content, rating, submittedAt`)
-- `backend/src/storage/ReviewStore.ts` — small interface; `SqliteReviewStore` implements it with a single SQLite file in `data/` (`reviews` table: `id` PK, indexed `app_id`, `author`, `title`, `content`, `rating`, `submitted_at`). The interface is our "swap in Postgres" answer for scaling.
+- `backend/src/itunesReviews.ts` — fetch + parse the iTunes JSON feed into a `Review` model (`id, appId, author, title, content, rating, submittedAt`)
+- `backend/src/reviewStore.ts` — small interface; `createSqliteReviewStore` returns a SQLite-backed store using a single file in `data/` (`reviews` table: `id` PK, indexed `app_id`, `author`, `title`, `content`, `rating`, `submitted_at`). The interface is our "swap in Postgres" answer for scaling.
 - `backend/src/poller.ts` — polls each configured app on startup and then every `POLL_INTERVAL` (default 10 min), fetches page 1 (configurable page depth), merges into store
 - `backend/src/server.ts` — Express app; `GET /api/apps` lists configured apps, `GET /api/apps/:appId/reviews?hours=48` returns reviews newest-first filtered to the window (hours configurable per the assignment's "increase the window" note)
 - `backend/src/config.ts` — `APP_IDS` comma-separated env var (multi-app support), poll interval, data dir
@@ -44,7 +44,7 @@ flowchart LR
 - **Stores review data / survives restart**: SQLite file persistence + `INSERT OR IGNORE` dedupe; on restart the poller resumes without duplicating rows. Docker volume proves it under compose.
 - **48h window, newest first**: filtering and sorting on the backend endpoint; window configurable.
 - **Any number of apps**: app IDs are pure config; storage, polling, and API are all keyed by appId; nothing hardcoded.
-- **Bonus tests (Vitest)**: RSS parsing from a fixture of the real feed JSON, store dedupe + persistence round-trip, 48h filter edge cases.
+- **Bonus tests (`node:test`)**: RSS parsing from a fixture of the real feed JSON, store dedupe + persistence round-trip, 48h filter edge cases.
 
 ## Time budget (~2.5h)
 
