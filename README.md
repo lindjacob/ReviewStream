@@ -7,4 +7,54 @@ Recent iOS App Store reviews viewer — take-home assignment.
 
 See [docs/PLAN.md](docs/PLAN.md) for the architecture and implementation plan. Work is tracked in GitHub issues, one per plan step.
 
-> Run instructions, design decisions, and dependency justifications will be completed as the implementation lands.
+## Prerequisites
+
+- Node.js 24.14 or newer. The backend targets Node 24 LTS because `node:sqlite` is Release Candidate there.
+- npm, bundled with Node.
+
+If you use `nvm`:
+
+```sh
+nvm install 24
+nvm use 24
+```
+
+## Install
+
+Install dependencies from the repository root. npm workspaces will install both `backend/` and `frontend/`.
+
+```sh
+npm install
+```
+
+## Run Locally
+
+Start the backend:
+
+```sh
+npm run dev --workspace backend
+```
+
+The backend listens on `http://localhost:3000`. The current scaffold exposes:
+
+```sh
+curl http://localhost:3000/health
+```
+
+Start the frontend in a second terminal:
+
+```sh
+npm run dev --workspace frontend
+```
+
+The Vite dev server prints the local frontend URL, typically `http://localhost:5173`.
+
+## Useful Commands
+
+```sh
+npm run build --workspace backend
+npm run build --workspace frontend
+npm test --workspaces --if-present
+```
+
+Design decisions and dependency justifications live in [docs/decisions/](docs/decisions/).

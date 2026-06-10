@@ -1,0 +1,8 @@
+{
+  "name": "reviewstream",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ]
+}
