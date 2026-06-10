@@ -11,8 +11,8 @@ worker, reviews the diff, verifies, handles docs, and opens the PR.
    make.
 3. **Get plan sign-off.** Share the plan with Jacob in chat. Wait for explicit approval before
    implementing. Iterate the plan if asked.
-4. **Delegate implementation.** Launch an implementation subagent using the most capable
-   implementation model your agent tool offers. Build its prompt by including the full contents of
+4. **Delegate implementation.** Launch an implementation subagent using newest cursor composer
+   model - use the newest claude sonnet when composer is unavailable. Build its prompt by including the full contents of
    [`../assets/worker-prompt.md`](../assets/worker-prompt.md) verbatim, then appending the issue
    body/comments, the approved plan, relevant rules/ADRs, and the acceptance criteria.
 5. **Review returned work.** Inspect the diff yourself; do not trust the subagent summary. Check
