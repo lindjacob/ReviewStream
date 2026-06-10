@@ -1,0 +1,63 @@
+{
+  "feed": {
+    "entry": [
+      {
+        "im:name": {
+          "label": "Example App"
+        },
+        "id": {
+          "attributes": {
+            "im:id": "595068606"
+          }
+        }
+      },
+      {
+        "author": {
+          "name": {
+            "label": "Alice Reviewer"
+          },
+          "uri": {
+            "label": "https://example.test/alice"
+          }
+        },
+        "updated": {
+          "label": "2026-06-10T08:30:00-07:00"
+        },
+        "im:rating": {
+          "label": "5"
+        },
+        "id": {
+          "label": "1234567890"
+        },
+        "title": {
+          "label": "Exactly what I needed"
+        },
+        "content": {
+          "label": "The workflow is clear and fast."
+        }
+      },
+      {
+        "author": {
+          "name": {
+            "label": "Bob Reviewer"
+          }
+        },
+        "updated": {
+          "label": "2026-06-09T19:15:20-07:00"
+        },
+        "im:rating": {
+          "label": "3"
+        },
+        "id": {
+          "label": "1234567891"
+        },
+        "title": {
+          "label": "Useful, but noisy"
+        },
+        "content": {
+          "label": "Good reviews view, but alerts need tuning."
+        }
+      }
+    ]
+  }
+}
