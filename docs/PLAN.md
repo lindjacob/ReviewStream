@@ -16,9 +16,9 @@ One GitHub issue per plan step with acceptance criteria; each wave of work is co
 
 ```mermaid
 flowchart LR
-    rss["iTunes RSS feed (per appId)"]
+    rss["iTunes RSS feed (configured appId)"]
     subgraph backend [Backend - Express + TS]
-        poller[Poller - setInterval per app]
+        poller[Poller - startup poll and interval]
         store["SqliteReviewStore (node:sqlite, dedupe by review id PK)"]
         api["GET /api/apps and GET /api/apps/:appId/reviews"]
     end
@@ -32,18 +32,18 @@ flowchart LR
 
 - `backend/src/itunesReviews.ts` — fetch + parse the iTunes JSON feed into a `Review` model (`id, appId, author, title, content, rating, submittedAt`)
 - `backend/src/reviewStore.ts` — small interface; `createSqliteReviewStore` returns a SQLite-backed store using a single file in `data/` (`reviews` table: `id` PK, indexed `app_id`, `author`, `title`, `content`, `rating`, `submitted_at`). The interface is our "swap in Postgres" answer for scaling.
-- `backend/src/poller.ts` — polls each configured app on startup and then every `POLL_INTERVAL` (default 10 min), fetches page 1 (configurable page depth), merges into store
+- `backend/src/polling.ts` — polls the configured app on startup and then every `POLL_INTERVAL` (default 5 min), fetches page 1, merges into store
 - `backend/src/server.ts` — Express app; `GET /api/apps` lists configured apps, `GET /api/apps/:appId/reviews?hours=48` returns reviews newest-first filtered to the window (hours configurable per the assignment's "increase the window" note)
-- `backend/src/config.ts` — `APP_IDS` comma-separated env var (multi-app support), poll interval, data dir
+- `backend/src/index.ts` — Express app startup; `APP_ID` selects the single app to poll, `POLL_INTERVAL` controls the polling cadence
 - `frontend/` — Vite + React + TS: app selector (if multiple apps), review cards with content, author, star rating, relative + absolute timestamp; loading/empty/error states; Vite dev proxy to backend so no CORS handling needed
 - `docker-compose.yml` — backend service with `./data` volume (persists across restarts), frontend served by nginx proxying `/api` to backend
-- `README.md` — run instructions (compose + bare npm), design decisions, multi-app scaling discussion, dependency justifications
+- `README.md` — run instructions (compose + bare npm), runtime configuration, design decisions, dependency justifications
 
 ## Key behaviors mapped to assessment criteria
 
 - **Stores review data / survives restart**: SQLite file persistence + `INSERT OR IGNORE` dedupe; on restart the poller resumes without duplicating rows. Docker volume proves it under compose.
 - **48h window, newest first**: filtering and sorting on the backend endpoint; window configurable.
-- **Any number of apps**: app IDs are pure config; storage, polling, and API are all keyed by appId; nothing hardcoded.
+- **Current app selection**: one app ID is configured via `APP_ID`; stored review rows remain keyed by `appId` so broader multi-app support can be added without changing the storage shape.
 - **Bonus tests (`node:test`)**: RSS parsing from a fixture of the real feed JSON, store dedupe + persistence round-trip, 48h filter edge cases.
 
 ## Time budget (~2.5h)
