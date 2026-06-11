@@ -29,15 +29,21 @@ npm install
 
 ## Run Locally
 
+Copy the example env file and edit as needed:
+
+```sh
+cp .env.example .env
+```
+
 Start the backend:
 
 ```sh
 npm run dev --workspace backend
 ```
 
-The backend listens on `http://localhost:3000` and polls immediately on startup. Runtime configuration comes from process environment variables:
+The backend listens on `http://localhost:3000` and polls immediately on startup. Dev and production start scripts load `.env` from the repository root via Node's `--env-file`. You can also set variables in the shell; those override the file.
 
-- `APP_IDS`: comma-separated App Store app IDs to poll. Defaults to `447188370`.
+- `APP_IDS`: comma-separated App Store app IDs to poll. Defaults to `447188370` when unset or blank.
 - `POLL_INTERVAL`: polling interval in milliseconds. Defaults to `300000`.
 
 Reviews are persisted to `data/reviews.sqlite` at the repository root.

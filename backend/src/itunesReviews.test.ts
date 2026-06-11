@@ -55,6 +55,25 @@ test("parseItunesReviews returns an empty array for a valid feed with no review 
   assert.deepEqual(parseItunesReviews({ feed: { entry: [] } }, appId), []);
 });
 
+test("parseItunesReviews returns an empty array when feed.entry is absent", () => {
+  assert.deepEqual(parseItunesReviews({ feed: {} }, appId), []);
+});
+
+test("parseItunesReviews accepts a single review entry rendered as an object", async () => {
+  const payload = await readFixture();
+
+  assert.ok(isRecord(payload));
+  const feed = payload.feed;
+  assert.ok(isRecord(feed));
+  const entries = feed.entry;
+  assert.ok(Array.isArray(entries));
+  feed.entry = entries[1];
+
+  const reviews = parseItunesReviews(payload, appId);
+  assert.equal(reviews.length, 1);
+  assert.equal(reviews[0]?.id, "1234567890");
+});
+
 test("parseItunesReviews rejects malformed feed shapes with a typed error", () => {
   assert.throws(
     () => parseItunesReviews({ feed: { entry: "not-an-array" } }, appId),

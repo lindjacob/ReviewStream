@@ -75,17 +75,29 @@ function parseSubmittedAt(label: string): Date {
   return submittedAt;
 }
 
+// Apple seems to omit feed.entry entirely when the feed has no entries, and renders it
+// as a single object (not a one-element array) when there is exactly one.
+function normalizeEntries(entry: unknown): unknown[] {
+  if (entry === undefined) {
+    return [];
+  }
+  if (Array.isArray(entry)) {
+    return entry;
+  }
+  if (isRecord(entry)) {
+    return [entry];
+  }
+  throw new MalformedItunesReviewsPayloadError("feed.entry must be an array, object, or absent");
+}
+
 export function parseItunesReviews(payload: unknown, appId: string): Review[] {
   if (!isRecord(payload) || !isRecord(payload.feed)) {
     throw new MalformedItunesReviewsPayloadError("Missing feed object");
   }
 
-  const { entry } = payload.feed;
-  if (!Array.isArray(entry)) {
-    throw new MalformedItunesReviewsPayloadError("feed.entry must be an array");
-  }
-
-  return entry.filter(isReviewEntry).map((reviewEntry) => parseReviewEntry(reviewEntry, appId));
+  return normalizeEntries(payload.feed.entry)
+    .filter(isReviewEntry)
+    .map((reviewEntry) => parseReviewEntry(reviewEntry, appId));
 }
 
 function buildItunesReviewsUrl(appId: string, country: string): URL {
