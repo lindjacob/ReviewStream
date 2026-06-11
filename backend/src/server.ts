@@ -7,7 +7,7 @@ import type {
   ReviewsResponse,
 } from "@reviewstream/shared/api";
 
-import type { Review } from "./itunesReviews.js";
+import type { Review } from "./models/review.js";
 import type { ReviewStore } from "./reviewStore.js";
 
 const DEFAULT_REVIEW_WINDOW_HOURS = 48;

@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import test, { type TestContext } from "node:test";
 
-import type { Review } from "./itunesReviews.js";
+import type { Review } from "./models/review.js";
 import { createSqliteReviewStore } from "./reviewStore.js";
 
 const appId = "595068606";

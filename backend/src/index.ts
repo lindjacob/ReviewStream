@@ -1,5 +1,6 @@
+import { parseAppId, parsePollIntervalMs } from "./config.js";
 import { fetchItunesReviews } from "./itunesReviews.js";
-import { parseAppId, parsePollIntervalMs, startReviewPolling } from "./polling.js";
+import { startReviewPolling } from "./polling.js";
 import { createSqliteReviewStore } from "./reviewStore.js";
 import { createServer } from "./server.js";
 

@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { fileURLToPath } from "node:url";
 
-import type { Review } from "./itunesReviews.js";
+import type { Review } from "./models/review.js";
 
 export type ReviewStore = {
   insertMany(reviews: Review[]): void | Promise<void>;

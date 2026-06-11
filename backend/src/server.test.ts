@@ -4,7 +4,7 @@ import type { Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import test, { type TestContext } from "node:test";
 
-import type { Review } from "./itunesReviews.js";
+import type { Review } from "./models/review.js";
 import type { ReviewStore } from "./reviewStore.js";
 import { createServer } from "./server.js";
 
