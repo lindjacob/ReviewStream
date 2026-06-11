@@ -11,7 +11,7 @@ export type SetIntervalFn = (
 ) => PollingTimerId;
 
 export type StartReviewPollingOptions = {
-  appId: string;
+  appIds: readonly string[];
   pollIntervalMs: number;
   store: ReviewStore;
   fetchReviews: FetchReviewsFn;
@@ -24,22 +24,24 @@ export type ReviewPollingHandle = {
 };
 
 async function pollOnce(
-  appId: string,
+  appIds: readonly string[],
   store: ReviewStore,
   fetchReviews: FetchReviewsFn,
   log: (...args: unknown[]) => void,
 ): Promise<void> {
-  try {
-    const reviews = await fetchReviews(appId);
-    await Promise.resolve(store.insertMany(reviews));
-  } catch (error) {
-    log("Review poll failed:", error);
+  for (const appId of appIds) {
+    try {
+      const reviews = await fetchReviews(appId);
+      await Promise.resolve(store.insertMany(reviews));
+    } catch (error) {
+      log(`Review poll failed for app ${appId}:`, error);
+    }
   }
 }
 
 export function startReviewPolling(options: StartReviewPollingOptions): ReviewPollingHandle {
   const {
-    appId,
+    appIds,
     pollIntervalMs,
     store,
     fetchReviews,
@@ -48,7 +50,7 @@ export function startReviewPolling(options: StartReviewPollingOptions): ReviewPo
   } = options;
 
   const runPoll = () => {
-    void pollOnce(appId, store, fetchReviews, log);
+    void pollOnce(appIds, store, fetchReviews, log);
   };
 
   runPoll();

@@ -37,7 +37,7 @@ npm run dev --workspace backend
 
 The backend listens on `http://localhost:3000` and polls immediately on startup. Runtime configuration comes from process environment variables:
 
-- `APP_ID`: App Store app ID to poll. Defaults to `595068606`.
+- `APP_IDS`: comma-separated App Store app IDs to poll. Defaults to `447188370`.
 - `POLL_INTERVAL`: polling interval in milliseconds. Defaults to `300000`.
 
 Reviews are persisted to `data/reviews.sqlite` at the repository root.

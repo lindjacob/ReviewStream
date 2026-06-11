@@ -4,21 +4,37 @@ import test from "node:test";
 import {
   DEFAULT_APP_ID,
   DEFAULT_POLL_INTERVAL_MS,
-  parseAppId,
+  parseAppIds,
   parsePollIntervalMs,
 } from "./config.js";
 
-test("parseAppId returns the default when APP_ID is missing", () => {
-  assert.equal(parseAppId({}), DEFAULT_APP_ID);
+test("parseAppIds returns the default when APP_IDS is missing", () => {
+  assert.deepEqual(parseAppIds({}), [DEFAULT_APP_ID]);
 });
 
-test("parseAppId trims whitespace and uses the configured value", () => {
-  assert.equal(parseAppId({ APP_ID: "  123456789  " }), "123456789");
+test("parseAppIds returns the default when APP_IDS is blank", () => {
+  assert.deepEqual(parseAppIds({ APP_IDS: "   " }), [DEFAULT_APP_ID]);
+  assert.deepEqual(parseAppIds({ APP_IDS: "" }), [DEFAULT_APP_ID]);
 });
 
-test("parseAppId falls back to the default for blank values", () => {
-  assert.equal(parseAppId({ APP_ID: "   " }), DEFAULT_APP_ID);
-  assert.equal(parseAppId({ APP_ID: "" }), DEFAULT_APP_ID);
+test("parseAppIds parses a single app id", () => {
+  assert.deepEqual(parseAppIds({ APP_IDS: "123456789" }), ["123456789"]);
+});
+
+test("parseAppIds parses multiple ids with whitespace", () => {
+  assert.deepEqual(parseAppIds({ APP_IDS: " 111 , 222 , 333 " }), ["111", "222", "333"]);
+});
+
+test("parseAppIds dedupes ids preserving order", () => {
+  assert.deepEqual(parseAppIds({ APP_IDS: "111,222,111,333,222" }), ["111", "222", "333"]);
+});
+
+test("parseAppIds drops empty segments", () => {
+  assert.deepEqual(parseAppIds({ APP_IDS: "111,, ,222" }), ["111", "222"]);
+});
+
+test("parseAppIds throws when explicitly set but yields no valid ids", () => {
+  assert.throws(() => parseAppIds({ APP_IDS: ",, ," }), /at least one valid app ID/);
 });
 
 test("parsePollIntervalMs returns the default when POLL_INTERVAL is missing", () => {

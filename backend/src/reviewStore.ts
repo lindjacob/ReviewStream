@@ -42,7 +42,8 @@ function initializeSchema(db: DatabaseSync): void {
       rating INTEGER NOT NULL,
       submitted_at INTEGER NOT NULL
     );
-    CREATE INDEX IF NOT EXISTS idx_reviews_app_id ON reviews (app_id);
+    DROP INDEX IF EXISTS idx_reviews_app_id;
+    CREATE INDEX IF NOT EXISTS idx_reviews_app_id_submitted_at ON reviews (app_id, submitted_at);
   `);
 }
 

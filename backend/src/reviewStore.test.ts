@@ -45,7 +45,7 @@ function readIndexedColumns(db: DatabaseSync, tableName: string): string[][] {
   );
 }
 
-test("createSqliteReviewStore initializes the reviews table and app id index", async (t) => {
+test("createSqliteReviewStore initializes the reviews table and composite index", async (t) => {
   const dbPath = await createTempDbPath(t);
   const store = createSqliteReviewStore({ dbPath });
   store.close();
@@ -67,7 +67,10 @@ test("createSqliteReviewStore initializes the reviews table and app id index", a
     1,
   );
   assert.ok(
-    readIndexedColumns(db, "reviews").some((columnsForIndex) => columnsForIndex.includes("app_id")),
+    readIndexedColumns(db, "reviews").some(
+      (columnsForIndex) =>
+        columnsForIndex.includes("app_id") && columnsForIndex.includes("submitted_at"),
+    ),
   );
 });
 

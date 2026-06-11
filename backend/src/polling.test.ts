@@ -6,6 +6,7 @@ import { startReviewPolling } from "./polling.js";
 import type { ReviewStore } from "./reviewStore.js";
 
 const appId = "595068606";
+const appIds = [appId];
 
 function buildReview(overrides: Partial<Review> = {}): Review {
   return {
@@ -40,7 +41,7 @@ test("startReviewPolling fetches and inserts reviews immediately", async () => {
   const reviews = [buildReview()];
 
   startReviewPolling({
-    appId,
+    appIds,
     pollIntervalMs: 60_000,
     store,
     fetchReviews: async (requestedAppId) => {
@@ -56,13 +57,67 @@ test("startReviewPolling fetches and inserts reviews immediately", async () => {
   assert.deepEqual(store.inserted, [reviews]);
 });
 
+test("startReviewPolling fetches all configured apps each tick", async () => {
+  const configuredAppIds = ["app-1", "app-2", "app-3"];
+  const store = createMockStore();
+  const fetchCalls: string[] = [];
+
+  startReviewPolling({
+    appIds: configuredAppIds,
+    pollIntervalMs: 60_000,
+    store,
+    fetchReviews: async (requestedAppId) => {
+      fetchCalls.push(requestedAppId);
+      return [buildReview({ appId: requestedAppId, id: `review-${requestedAppId}` })];
+    },
+    setIntervalFn: () => 0,
+  });
+
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.deepEqual(fetchCalls, configuredAppIds);
+  assert.equal(store.inserted.length, configuredAppIds.length);
+});
+
+test("startReviewPolling continues polling other apps when one app fails in the same tick", async () => {
+  const configuredAppIds = ["good-app", "bad-app", "another-good"];
+  const store = createMockStore();
+  const fetchCalls: string[] = [];
+  const logMessages: unknown[][] = [];
+
+  startReviewPolling({
+    appIds: configuredAppIds,
+    pollIntervalMs: 60_000,
+    store,
+    fetchReviews: async (requestedAppId) => {
+      fetchCalls.push(requestedAppId);
+      if (requestedAppId === "bad-app") {
+        throw new Error("feed unavailable");
+      }
+      return [buildReview({ appId: requestedAppId, id: `review-${requestedAppId}` })];
+    },
+    setIntervalFn: () => 0,
+    log: (...args) => {
+      logMessages.push(args);
+    },
+  });
+
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.deepEqual(fetchCalls, configuredAppIds);
+  assert.equal(store.inserted.length, 2);
+  assert.equal(logMessages.length, 1);
+  assert.match(String(logMessages[0]?.[0]), /bad-app/);
+  assert.match(String(logMessages[0]?.[1]), /feed unavailable/);
+});
+
 test("startReviewPolling schedules future polls at the configured interval", async (t) => {
   const store = createMockStore();
   let scheduledCallback: (() => void) | undefined;
   let scheduledIntervalMs: number | undefined;
 
   const handle = startReviewPolling({
-    appId,
+    appIds,
     pollIntervalMs: 45_000,
     store,
     fetchReviews: async () => [],
@@ -92,7 +147,7 @@ test("startReviewPolling logs fetch failures without stopping future polls", asy
   let fetchCount = 0;
 
   const handle = startReviewPolling({
-    appId,
+    appIds,
     pollIntervalMs: 30_000,
     store,
     fetchReviews: async () => {
@@ -117,6 +172,7 @@ test("startReviewPolling logs fetch failures without stopping future polls", asy
   assert.equal(fetchCount, 1);
   assert.deepEqual(store.inserted, []);
   assert.equal(logMessages.length, 1);
+  assert.match(String(logMessages[0]?.[0]), /595068606/);
   assert.match(String(logMessages[0]?.[1]), /network down/);
 
   scheduledCallback?.();
@@ -144,7 +200,7 @@ test("startReviewPolling logs store failures without stopping future polls", asy
   };
 
   const handle = startReviewPolling({
-    appId,
+    appIds,
     pollIntervalMs: 30_000,
     store,
     fetchReviews: async () => [buildReview()],
@@ -162,6 +218,7 @@ test("startReviewPolling logs store failures without stopping future polls", asy
 
   assert.equal(insertCount, 1);
   assert.equal(logMessages.length, 1);
+  assert.match(String(logMessages[0]?.[0]), /595068606/);
   assert.match(String(logMessages[0]?.[1]), /database locked/);
 
   scheduledCallback?.();
@@ -184,7 +241,7 @@ test("startReviewPolling awaits async insertMany", async () => {
   const reviews = [buildReview({ id: "async-insert" })];
 
   startReviewPolling({
-    appId,
+    appIds,
     pollIntervalMs: 60_000,
     store,
     fetchReviews: async () => reviews,
@@ -201,7 +258,7 @@ test("stop clears the polling interval", (t) => {
   let clearedTimerId: unknown;
 
   const handle = startReviewPolling({
-    appId,
+    appIds,
     pollIntervalMs: 10_000,
     store: createMockStore(),
     fetchReviews: async () => [],
