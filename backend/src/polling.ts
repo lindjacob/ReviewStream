@@ -1,7 +1,7 @@
 import type { Review } from "./itunesReviews.js";
 import type { ReviewStore } from "./reviewStore.js";
 
-export const DEFAULT_APP_ID = "595068606";
+export const DEFAULT_APP_ID = "447188370";
 export const DEFAULT_POLL_INTERVAL_MS = 300_000;
 
 export function parseAppId(env: Record<string, string | undefined> = process.env): string {
